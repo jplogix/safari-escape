@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Safari Escape</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            color: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 32px 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .status-box {
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: left;
+        }
+
+        .status-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #555;
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #ccc;
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+
+        .attempt {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .attempt.active {
+            color: #f59e0b;
+        }
+
+        .attempt.done {
+            color: #10b981;
+        }
+
+        .attempt.failed {
+            color: #ef4444;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .badge.instagram {
+            background: #833ab4;
+            color: white;
+        }
+
+        .badge.safe {
+            background: #1a3a2a;
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .badge.warning {
+            background: #3a2a1a;
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            margin-top: 12px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .ua-box {
+            margin-top: 16px;
+            font-size: 10px;
+            color: #3a3a3a;
+            word-break: break-all;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Hidden escape anchor — programmatic .click() triggers .linkActivated nav type in WKWebView -->
+    <a id="esc-anchor-safari" href="#" style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;"
+        tabindex="-1">s</a>
+
+    <div class="card">
+        <div class="icon">🧭</div>
+        <h1>Safari Escape</h1>
+        <p class="subtitle">
+            Detects Instagram's in-app browser on iOS and opens this page in Safari automatically.
+        </p>
+        <div id="env-badge"></div>
+        <div class="status-box">
+            <span class="status-label">Status</span>
+            <span class="status-text" id="status-text">Initializing…</span>
+            <span class="attempt" id="attempt-1">① hidden anchor click</span>
+            <span class="attempt" id="attempt-2">② window.location (direct)</span>
+            <span class="attempt" id="attempt-3">③ top.location.href</span>
+            <span class="attempt" id="attempt-4">④ iframe navigation</span>
+            <span class="attempt" id="attempt-5">⑤ fallback (normal load)</span>
+        </div>
+        <a id="manual-btn" class="btn btn-primary" href="#" style="display:none;">Open in Safari manually</a>
+        <div class="ua-box" id="ua-box"></div>
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            var TARGET_URL = (function () {
+                var u = window.location.href;
+                return u.replace(/^x-safari-https?:\/\//, 'https://');
+            })();
+            var TARGET_BARE = TARGET_URL.replace(/^https?:\/\//, '');
+            var SAFARI_SCHEME = 'x-safari-https://' + TARGET_BARE;
+
+            var ua = navigator.userAgent || '';
+            function isIOS() { return /iPad|iPhone|iPod/.test(ua) && !window.MSStream; }
+            function isInstagram() { return /Instagram/i.test(ua); }
+            function isFacebook() { return /FBAN|FBAV|FB_IAB/i.test(ua); }
+            function isTikTok() { return /musical_ly|TikTok|ByteDance/i.test(ua); }
+            function isInApp() { return isInstagram() || isFacebook() || isTikTok(); }
+            function isSafari() { return /Safari/i.test(ua) && !/CriOS|FxiOS|Chrome/i.test(ua); }
+
+            function setText(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+            function setCls(id, c) { var el = document.getElementById(id); if (el) el.className = 'attempt ' + c; }
+            function setStatus(m) { setText('status-text', m); }
+
+            function renderBadge() {
+                var b = document.getElementById('env-badge');
+                if (!b) return;
+                if (!isIOS()) b.innerHTML = '<span class="badge warning">Not on iOS</span>';
+                else if (isInstagram()) b.innerHTML = '<span class="badge instagram">Instagram in-app browser</span>';
+                else if (isFacebook()) b.innerHTML = '<span class="badge instagram">Facebook in-app browser</span>';
+                else if (isTikTok()) b.innerHTML = '<span class="badge instagram">TikTok in-app browser</span>';
+                else if (isSafari()) b.innerHTML = '<span class="badge safe">Safari ✓ — already escaped</span>';
+                else b.innerHTML = '<span class="badge warning">Unknown browser</span>';
+            }
+
+            var escaped = false;
+            var timers = [];
+
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden && !escaped) {
+                    escaped = true;
+                    timers.forEach(clearTimeout);
+                    setStatus('Escaped — user is now in Safari.');
+                }
+            });
+            window.addEventListener('pagehide', function () {
+                escaped = true; timers.forEach(clearTimeout);
+            });
+
+            function schedule(fn, delay) {
+                var t = setTimeout(function () { if (!escaped) fn(); }, delay);
+                timers.push(t);
+            }
+
+            // ① Hidden <a> click → .linkActivated nav type → Instagram forwards to UIApplication.open()
+            function tryAnchor() {
+                setCls('attempt-1', 'active');
+                setStatus('① Trying hidden anchor click…');
+                var a = document.getElementById('esc-anchor-safari');
+                if (a) { a.href = SAFARI_SCHEME; try { a.click(); } catch (e) { setCls('attempt-1', 'failed'); } }
+            }
+
+            // ② Direct window.location — classic approach, may still work
+            function tryWindowLoc() {
+                setCls('attempt-1', 'failed'); setCls('attempt-2', 'active');
+                setStatus('② Trying window.location…');
+                try { window.location = SAFARI_SCHEME; } catch (e) { setCls('attempt-2', 'failed'); }
+            }
+
+            // ③ top.location.href — different frame context
+            function tryTopLoc() {
+                setCls('attempt-2', 'failed'); setCls('attempt-3', 'active');
+                setStatus('③ Trying top.location.href…');
+                try { top.location.href = SAFARI_SCHEME; } catch (e) { setCls('attempt-3', 'failed'); }
+            }
+
+            // ④ Iframe navigation — separate WKNavigationDelegate call path
+            function tryIframe() {
+                setCls('attempt-3', 'failed'); setCls('attempt-4', 'active');
+                setStatus('④ Trying iframe navigation…');
+                try {
+                    var f = document.createElement('iframe');
+                    f.style.cssText = 'display:none;width:0;height:0;border:0;';
+                    document.body.appendChild(f);
+                    f.src = SAFARI_SCHEME;
+                    setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 400);
+                } catch (e) { setCls('attempt-4', 'failed'); }
+            }
+
+            // ⑤ Graceful fallback
+            function doFallback() {
+                setCls('attempt-4', 'failed'); setCls('attempt-5', 'active');
+                setStatus('⑤ Fallback — loading in in-app browser.');
+                var btn = document.getElementById('manual-btn');
+                if (btn) { btn.href = SAFARI_SCHEME; btn.style.display = 'block'; }
+                setCls('attempt-5', 'done');
+            }
+
+            document.getElementById('ua-box').textContent = 'UA: ' + ua;
+            renderBadge();
+
+            if (!isIOS() || !isInApp()) {
+                setStatus(isIOS() ? 'Already in Safari. ✓' : 'Not on iOS — no redirect needed.');
+                ['attempt-1', 'attempt-2', 'attempt-3', 'attempt-4', 'attempt-5'].forEach(function (id) { setCls(id, 'done'); });
+                return;
+            }
+
+            setStatus('iOS in-app browser detected. Starting escape…');
+            tryAnchor();
+            schedule(tryWindowLoc, 400);
+            schedule(tryTopLoc, 700);
+            schedule(tryIframe, 1000);
+            schedule(doFallback, 1600);
+        })();
+    </script>
+</body>
+
+</html>
