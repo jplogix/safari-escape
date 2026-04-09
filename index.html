@@ -223,11 +223,13 @@
             function renderBadge() {
                 var b = document.getElementById('env-badge');
                 if (!b) return;
+                var isChrome = /CriOS|Chrome/i.test(ua);
                 if (!isIOS()) b.innerHTML = '<span class="badge warning">Not on iOS</span>';
                 else if (isInstagram()) b.innerHTML = '<span class="badge instagram">Instagram in-app browser</span>';
                 else if (isFacebook()) b.innerHTML = '<span class="badge instagram">Facebook in-app browser</span>';
                 else if (isTikTok()) b.innerHTML = '<span class="badge instagram">TikTok in-app browser</span>';
                 else if (isSafari()) b.innerHTML = '<span class="badge safe">Safari ✓ — already escaped</span>';
+                else if (isChrome) b.innerHTML = '<span class="badge safe">Chrome ✓</span>';
                 else b.innerHTML = '<span class="badge warning">Unknown browser</span>';
             }
 
@@ -344,9 +346,31 @@
 
             document.getElementById('ua-box').textContent = 'UA: ' + ua;
             renderBadge();
+            
+            var isChromeLoc = /CriOS|Chrome/i.test(ua);
+
+            if (isIOS() && isChromeLoc && !isInstagram()) {
+                setStatus('Opened in Chrome. Escaping Chrome to Safari...');
+                try { window.location.assign(SAFARI_SCHEME); } catch (e) { }
+                try { top.location.href = SAFARI_SCHEME; } catch (e) { }
+                setTimeout(function () {
+                    if (!document.hidden) {
+                       setStatus('Could not auto-escape from Chrome to Safari. Already in Chrome. ✓');
+                       ['attempt-1', 'attempt-2', 'attempt-3', 'attempt-4', 'attempt-5'].forEach(function (id) { setCls(id, 'done'); });
+                       // Show a button to let them try to force it
+                       var btn = document.getElementById('manual-btn');
+                       if (btn) {
+                           btn.href = SAFARI_SCHEME;
+                           btn.style.display = 'block';
+                           btn.innerHTML = 'Tap to force Safari';
+                       }
+                    }
+                }, 800);
+                return;
+            }
 
             if (!isIOS() || !isInApp()) {
-                setStatus(isIOS() ? 'Already in Safari. ✓' : 'Not on iOS — no redirect needed.');
+                setStatus(isIOS() ? 'Already safely escaped. ✓' : 'Not on iOS — no redirect needed.');
                 ['attempt-1', 'attempt-2', 'attempt-3', 'attempt-4', 'attempt-5'].forEach(function (id) { setCls(id, 'done'); });
                 return;
             }
