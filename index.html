@@ -316,6 +316,14 @@
                     btn.addEventListener('click', function (ev) {
                         ev.preventDefault();
                         openByUserGesture(SAFARI_SCHEME);
+                        setTimeout(function () {
+                            if (!document.hidden && !escaped) {
+                                btn.innerHTML = "Safari Blocked. Tap <b>&middot;&middot;&middot;</b> (top right) &rarr; <b>Open in System Browser</b>";
+                                btn.style.background = "#d9534f";
+                                btn.style.borderColor = "#d43f3a";
+                                btn.style.pointerEvents = "none";
+                            }
+                        }, 1500);
                     });
                 }
                 if (chromeBtn) {
