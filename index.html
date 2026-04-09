@@ -186,9 +186,21 @@
         (function () {
             'use strict';
 
+            function normalizeHttpsUrl(raw) {
+                if (!raw) return null;
+                try {
+                    var parsed = new URL(raw);
+                    if (!/^https?:$/i.test(parsed.protocol)) return null;
+                    return parsed.toString();
+                } catch (e) {
+                    return null;
+                }
+            }
+
             var TARGET_URL = (function () {
-                var u = window.location.href;
-                return u.replace(/^x-safari-https?:\/\//, 'https://');
+                var current = new URL(window.location.href.replace(/^x-safari-https?:\/\//, 'https://'));
+                var queryTarget = normalizeHttpsUrl(current.searchParams.get('url'));
+                return queryTarget || current.toString();
             })();
             var TARGET_BARE = TARGET_URL.replace(/^https?:\/\//, '');
             var SAFARI_SCHEME = 'x-safari-https://' + TARGET_BARE;
@@ -248,6 +260,12 @@
                 try { window.open(SAFARI_SCHEME, '_blank'); } catch (e) { }
                 try { window.location.assign(SAFARI_SCHEME); } catch (e) { }
                 try { top.location.href = SAFARI_SCHEME; } catch (e) { }
+
+                // If external-app handoff is blocked, continue to the normal HTTPS destination.
+                var t = setTimeout(function () {
+                    if (!document.hidden) window.location.assign(TARGET_URL);
+                }, 900);
+                timers.push(t);
             }
 
             // ① Hidden <a> click → .linkActivated nav type → Instagram forwards to UIApplication.open()
@@ -297,7 +315,7 @@
                     btn.addEventListener('click', function (ev) {
                         ev.preventDefault();
                         openByUserGesture();
-                    }, { once: true });
+                    });
                 }
                 if (httpsBtn) {
                     httpsBtn.href = TARGET_URL;
