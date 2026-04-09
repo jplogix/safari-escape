@@ -171,7 +171,7 @@
             <span class="attempt" id="attempt-4">④ iframe navigation</span>
             <span class="attempt" id="attempt-5">⑤ fallback (normal load)</span>
         </div>
-        <a id="manual-btn" class="btn btn-primary" href="#" style="display:none;">Open in Safari manually</a>
+        <a id="manual-btn" class="btn btn-primary" href="#" style="display:none;">Tap to open in Safari</a>
         <div class="ua-box" id="ua-box"></div>
     </div>
 
@@ -228,6 +228,21 @@
                 timers.push(t);
             }
 
+            function openByUserGesture() {
+                setStatus('User gesture detected. Retrying Safari handoff…');
+
+                // Instagram on iPad may require a trusted user gesture for external scheme navigation.
+                var a = document.getElementById('esc-anchor-safari');
+                if (a) {
+                    a.href = SAFARI_SCHEME;
+                    try { a.click(); } catch (e) { }
+                }
+
+                try { window.open(SAFARI_SCHEME, '_blank'); } catch (e) { }
+                try { window.location.assign(SAFARI_SCHEME); } catch (e) { }
+                try { top.location.href = SAFARI_SCHEME; } catch (e) { }
+            }
+
             // ① Hidden <a> click → .linkActivated nav type → Instagram forwards to UIApplication.open()
             function tryAnchor() {
                 setCls('attempt-1', 'active');
@@ -266,9 +281,16 @@
             // ⑤ Graceful fallback
             function doFallback() {
                 setCls('attempt-4', 'failed'); setCls('attempt-5', 'active');
-                setStatus('⑤ Fallback — loading in in-app browser.');
+                setStatus('⑤ Auto-escape blocked. Tap the button to retry with a user gesture.');
                 var btn = document.getElementById('manual-btn');
-                if (btn) { btn.href = SAFARI_SCHEME; btn.style.display = 'block'; }
+                if (btn) {
+                    btn.href = SAFARI_SCHEME;
+                    btn.style.display = 'block';
+                    btn.addEventListener('click', function (ev) {
+                        ev.preventDefault();
+                        openByUserGesture();
+                    }, { once: true });
+                }
                 setCls('attempt-5', 'done');
             }
 
