@@ -178,6 +178,9 @@
             <span class="attempt" id="attempt-5">⑤ fallback (normal load)</span>
         </div>
         <a id="manual-btn" class="btn btn-primary" href="#" style="display:none;">Tap to open in Safari</a>
+        <a id="chrome-btn" class="btn btn-primary" href="#"
+            style="background: #e6b907; color: black; border: 1px solid #c7a006; display:none;">Tap to open in
+            Chrome</a>
         <a id="https-btn" class="btn btn-secondary" href="#" style="display:none;">Open destination here</a>
         <div class="ua-box" id="ua-box"></div>
     </div>
@@ -247,24 +250,22 @@
                 timers.push(t);
             }
 
-            function openByUserGesture() {
-                setStatus('User gesture detected. Retrying Safari handoff…');
+            function openByUserGesture(scheme) {
+                scheme = scheme || SAFARI_SCHEME;
+                setStatus('User gesture detected. Retrying handoff to ' + scheme + '…');
 
                 // Instagram on iPad may require a trusted user gesture for external scheme navigation.
                 var a = document.getElementById('esc-anchor-safari');
                 if (a) {
-                    a.href = SAFARI_SCHEME;
+                    a.href = scheme;
                     try { a.click(); } catch (e) { }
                 }
 
-                try { window.location.assign(SAFARI_SCHEME); } catch (e) { }
-                try { top.location.href = SAFARI_SCHEME; } catch (e) { }
+                try { window.location.assign(scheme); } catch (e) { }
+                try { top.location.href = scheme; } catch (e) { }
 
-                // If external-app handoff is blocked, continue to the normal HTTPS destination.
-                var t = setTimeout(function () {
-                    if (!document.hidden) window.location.assign(TARGET_URL);
-                }, 900);
-                timers.push(t);
+                // Since we want to escape, do NOT automatically fallback to the regular URL.
+                // Just let the user tap 'Open in Safari' or the second button if this fails.
             }
 
             // ① Hidden <a> click → .linkActivated nav type → Instagram forwards to UIApplication.open()
@@ -307,13 +308,23 @@
                 setCls('attempt-4', 'failed'); setCls('attempt-5', 'active');
                 setStatus('⑤ Auto-escape blocked. Tap the button to retry with a user gesture.');
                 var btn = document.getElementById('manual-btn');
+                var chromeBtn = document.getElementById('chrome-btn');
                 var httpsBtn = document.getElementById('https-btn');
                 if (btn) {
                     btn.href = SAFARI_SCHEME;
                     btn.style.display = 'block';
                     btn.addEventListener('click', function (ev) {
                         ev.preventDefault();
-                        openByUserGesture();
+                        openByUserGesture(SAFARI_SCHEME);
+                    });
+                }
+                if (chromeBtn) {
+                    var CHROME_SCHEME = 'googlechromes://' + TARGET_BARE;
+                    chromeBtn.href = CHROME_SCHEME;
+                    chromeBtn.style.display = 'block';
+                    chromeBtn.addEventListener('click', function (ev) {
+                        ev.preventDefault();
+                        openByUserGesture(CHROME_SCHEME);
                     });
                 }
                 if (httpsBtn) {
