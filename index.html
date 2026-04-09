@@ -349,7 +349,8 @@
                     });
                 }
                 if (chromeBtn) {
-                    var CHROME_SCHEME = 'googlechromes://' + TARGET_BARE;
+                    var currentUrlBare = window.location.href.replace(/^https?:\/\//, '');
+                    var CHROME_SCHEME = 'googlechromes://' + currentUrlBare;
                     chromeBtn.href = CHROME_SCHEME;
                     chromeBtn.style.display = 'block';
                     chromeBtn.addEventListener('click', function (ev) {
