@@ -139,6 +139,12 @@
             color: white;
         }
 
+        .btn-secondary {
+            background: #262626;
+            color: #d4d4d4;
+            border: 1px solid #3a3a3a;
+        }
+
         .ua-box {
             margin-top: 16px;
             font-size: 10px;
@@ -172,6 +178,7 @@
             <span class="attempt" id="attempt-5">⑤ fallback (normal load)</span>
         </div>
         <a id="manual-btn" class="btn btn-primary" href="#" style="display:none;">Tap to open in Safari</a>
+        <a id="https-btn" class="btn btn-secondary" href="#" style="display:none;">Open destination here</a>
         <div class="ua-box" id="ua-box"></div>
     </div>
 
@@ -283,6 +290,7 @@
                 setCls('attempt-4', 'failed'); setCls('attempt-5', 'active');
                 setStatus('⑤ Auto-escape blocked. Tap the button to retry with a user gesture.');
                 var btn = document.getElementById('manual-btn');
+                var httpsBtn = document.getElementById('https-btn');
                 if (btn) {
                     btn.href = SAFARI_SCHEME;
                     btn.style.display = 'block';
@@ -290,6 +298,10 @@
                         ev.preventDefault();
                         openByUserGesture();
                     }, { once: true });
+                }
+                if (httpsBtn) {
+                    httpsBtn.href = TARGET_URL;
+                    httpsBtn.style.display = 'block';
                 }
                 setCls('attempt-5', 'done');
             }
