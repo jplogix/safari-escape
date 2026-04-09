@@ -178,6 +178,8 @@
             <span class="attempt" id="attempt-5">⑤ fallback (normal load)</span>
         </div>
         <a id="manual-btn" class="btn btn-primary" href="#" style="display:none;">Tap to open in Safari</a>
+        <a id="shortcut-btn" class="btn btn-primary" href="#"
+            style="background: #2a2a72; color: #fff; border: 1px solid #1a1a52; display:none;">Tap to open via Shortcut (Needs "OpenSafari" shortcut)</a>
         <a id="chrome-btn" class="btn btn-primary" href="#"
             style="background: #e6b907; color: black; border: 1px solid #c7a006; display:none;">Tap to open in
             Chrome</a>
@@ -311,6 +313,7 @@
                 setStatus('⑤ Auto-escape blocked. Tap the button to retry with a user gesture.');
                 var btn = document.getElementById('manual-btn');
                 var chromeBtn = document.getElementById('chrome-btn');
+                var shortcutBtn = document.getElementById('shortcut-btn');
                 var httpsBtn = document.getElementById('https-btn');
                 if (btn) {
                     btn.href = SAFARI_SCHEME;
@@ -326,6 +329,15 @@
                                 btn.style.pointerEvents = "none";
                             }
                         }, 1500);
+                    });
+                }
+                if (shortcutBtn) {
+                    var SHORTCUT_SCHEME = 'shortcuts://run-shortcut?name=OpenSafari&input=' + encodeURIComponent(TARGET_URL);
+                    shortcutBtn.href = SHORTCUT_SCHEME;
+                    shortcutBtn.style.display = 'block';
+                    shortcutBtn.addEventListener('click', function (ev) {
+                        ev.preventDefault();
+                        openByUserGesture(SHORTCUT_SCHEME);
                     });
                 }
                 if (chromeBtn) {
@@ -346,7 +358,7 @@
 
             document.getElementById('ua-box').textContent = 'UA: ' + ua;
             renderBadge();
-            
+
             var isChromeLoc = /CriOS|Chrome/i.test(ua);
 
             if (isIOS() && isChromeLoc && !isInstagram()) {
@@ -355,15 +367,15 @@
                 try { top.location.href = SAFARI_SCHEME; } catch (e) { }
                 setTimeout(function () {
                     if (!document.hidden) {
-                       setStatus('Could not auto-escape from Chrome to Safari. Already in Chrome. ✓');
-                       ['attempt-1', 'attempt-2', 'attempt-3', 'attempt-4', 'attempt-5'].forEach(function (id) { setCls(id, 'done'); });
-                       // Show a button to let them try to force it
-                       var btn = document.getElementById('manual-btn');
-                       if (btn) {
-                           btn.href = SAFARI_SCHEME;
-                           btn.style.display = 'block';
-                           btn.innerHTML = 'Tap to force Safari';
-                       }
+                        setStatus('Could not auto-escape from Chrome to Safari. Already in Chrome. ✓');
+                        ['attempt-1', 'attempt-2', 'attempt-3', 'attempt-4', 'attempt-5'].forEach(function (id) { setCls(id, 'done'); });
+                        // Show a button to let them try to force it
+                        var btn = document.getElementById('manual-btn');
+                        if (btn) {
+                            btn.href = SAFARI_SCHEME;
+                            btn.style.display = 'block';
+                            btn.innerHTML = 'Tap to force Safari';
+                        }
                     }
                 }, 800);
                 return;
