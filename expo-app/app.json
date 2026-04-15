@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Safari Escape",
+    "slug": "safari-escape-wine",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "ios": {
+      "bundleIdentifier": "app.safari-escape-wine",
+      "supportsTablet": true,
+      "associatedDomains": [
+        "applinks:safari-escape-wine.vercel.app",
+        "applinks:safari-escape-wine.vercel.app"
+      ],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.safariescape.wine",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a0a0a"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      "expo-font"
+    ],
+    "scheme": "safariescape",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3c571dff-c78a-44a1-a0f3-78f764c39e89"
+      }
+    }
+  }
+}

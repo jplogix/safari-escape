@@ -1,0 +1,32 @@
+{
+    "cli": {
+        "version": ">= 14.1.0",
+        "appVersionSource": "remote"
+    },
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "ios": {
+                "simulator": true
+            }
+        },
+        "preview": {
+            "distribution": "internal"
+        },
+        "production": {
+            "ios": {
+                "buildConfiguration": "Release"
+            }
+        }
+    },
+    "submit": {
+        "production": {
+            "ios": {
+                "appleId": "juanpablocabral@icloud.com",
+                "ascAppId": "6762101100",
+                "appleTeamId": "7TQJC8MYL8"
+            }
+        }
+    }
+}

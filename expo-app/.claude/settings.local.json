@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo:*)",
+      "Bash(pod install:*)",
+      "Bash(cp assets/icon.png assets/adaptive-icon.png)",
+      "Bash(cp assets/icon.png assets/splash.png)",
+      "Bash(xcrun simctl:*)",
+      "Bash(xcodebuild -workspace safari-escape-wine.xcworkspace -scheme safari-escape-wine -sdk iphonesimulator -destination 'platform=iOS Simulator,id=2D52B3E3-812E-417D-B067-E651FC072C16' build)"
+    ]
+  }
+}

@@ -175,7 +175,8 @@
             <span class="attempt" id="attempt-2">② window.location (direct)</span>
             <span class="attempt" id="attempt-3">③ top.location.href</span>
             <span class="attempt" id="attempt-4">④ iframe navigation</span>
-            <span class="attempt" id="attempt-5">⑤ fallback (normal load)</span>
+            <span class="attempt" id="attempt-5">⑤ legacy scheme probes</span>
+            <span class="attempt" id="attempt-6">⑥ fallback (normal load)</span>
         </div>
         <a id="manual-btn" class="btn btn-primary" href="#" style="display:none;">Tap to open in Safari</a>
         <a id="shortcut-btn" class="btn btn-primary" href="#"
@@ -254,6 +255,13 @@
             window.addEventListener('pagehide', function () {
                 escaped = true; timers.forEach(clearTimeout);
             });
+            window.addEventListener('blur', function () {
+                if (!escaped) {
+                    escaped = true;
+                    timers.forEach(clearTimeout);
+                    setStatus('Escaped — lost focus to native app.');
+                }
+            });
 
             function schedule(fn, delay) {
                 var t = setTimeout(function () { if (!escaped) fn(); }, delay);
@@ -313,10 +321,48 @@
                 } catch (e) { setCls('attempt-4', 'failed'); }
             }
 
-            // ⑤ Graceful fallback
-            function doFallback() {
+            // ⑤ Legacy/edge-case scheme probes
+            function tryLegacyProbes() {
                 setCls('attempt-4', 'failed'); setCls('attempt-5', 'active');
-                setStatus('⑤ Auto-escape blocked. Tap the button to retry with a user gesture.');
+                setStatus('⑤ Trying legacy scheme probes…');
+
+                var probeSchemes = [
+                    'ftp://' + TARGET_BARE,
+                    'mailto:?subject=Redirect&body=' + encodeURIComponent(TARGET_URL)
+                ];
+
+                var idx = 0;
+                function nextProbe() {
+                    if (escaped) return;
+                    if (idx >= probeSchemes.length) {
+                        setCls('attempt-5', 'failed');
+                        return;
+                    }
+
+                    var scheme = probeSchemes[idx++];
+                    try {
+                        var f = document.createElement('iframe');
+                        f.style.cssText = 'display:none;width:0;height:0;border:0;';
+                        document.body.appendChild(f);
+                        f.src = scheme;
+                        setTimeout(function () {
+                            if (f.parentNode) f.parentNode.removeChild(f);
+                            nextProbe();
+                        }, 800);
+                    } catch (e) {
+                        nextProbe();
+                    }
+                }
+                nextProbe();
+            }
+
+            // ⑥ Graceful fallback
+            function doFallback() {
+                if (!escaped && document.getElementById('attempt-5').className.indexOf('failed') === -1) {
+                    setCls('attempt-5', 'failed');
+                }
+                setCls('attempt-6', 'active');
+                setStatus('⑥ Auto-escape blocked. Tap the button to retry with a user gesture.');
                 var btn = document.getElementById('manual-btn');
                 var chromeBtn = document.getElementById('chrome-btn');
                 var shortcutBtn = document.getElementById('shortcut-btn');
@@ -362,7 +408,7 @@
                     httpsBtn.href = TARGET_URL;
                     httpsBtn.style.display = 'block';
                 }
-                setCls('attempt-5', 'done');
+                setCls('attempt-6', 'done');
             }
 
             document.getElementById('ua-box').textContent = 'UA: ' + ua;
@@ -385,16 +431,17 @@
 
             if (!isIOS() || !isInApp()) {
                 setStatus(isIOS() ? 'Already safely escaped. ✓' : 'Not on iOS — no redirect needed.');
-                ['attempt-1', 'attempt-2', 'attempt-3', 'attempt-4', 'attempt-5'].forEach(function (id) { setCls(id, 'done'); });
+                ['attempt-1', 'attempt-2', 'attempt-3', 'attempt-4', 'attempt-5', 'attempt-6'].forEach(function (id) { setCls(id, 'done'); });
                 return;
             }
 
             setStatus('iOS in-app browser detected. Starting escape…');
             tryAnchor();
             schedule(tryWindowLoc, 400);
-            schedule(tryTopLoc, 700);
-            schedule(tryIframe, 1000);
-            schedule(doFallback, 1600);
+            schedule(tryTopLoc, 800);
+            schedule(tryIframe, 1200);
+            schedule(tryLegacyProbes, 1600);
+            schedule(doFallback, 3400); // 1600 + (2 probes * 800ms) + 200ms buffer
         })();
     </script>
 </body>
