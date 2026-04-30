@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Safari Escape",
+    "name": "Browser Escape",
     "slug": "safari-escape-wine",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,13 +13,18 @@
     },
     "ios": {
       "bundleIdentifier": "app.safari-escape-wine",
+      "buildNumber": "4",
       "supportsTablet": true,
+      "requireFullScreen": true,
       "associatedDomains": [
-        "applinks:safari-escape-wine.vercel.app",
         "applinks:safari-escape-wine.vercel.app"
       ],
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "googlechromes",
+          "googlechrome"
+        ]
       }
     },
     "android": {
@@ -34,7 +39,7 @@
       "expo-asset",
       "expo-font"
     ],
-    "scheme": "safariescape",
+    "scheme": "browserescape",
     "extra": {
       "router": {
         "origin": false

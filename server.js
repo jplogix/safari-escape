@@ -1,5 +1,5 @@
 const express = require('express');
-const path = require('path');
+const path = require('node:path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -104,12 +104,12 @@ app.get('/r', (req, res) => {
     return res.redirect(302, to);
 });
 
-app.get('/success', (req, res) => {
+app.get('/success', (_req, res) => {
     res.type('html').send(successPage());
 });
 
 // Apple App Site Association (AASA) JSON
-app.get('/.well-known/apple-app-site-association', (req, res) => {
+app.get('/.well-known/apple-app-site-association', (_req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.json({
         "applinks": {
@@ -124,7 +124,7 @@ app.get('/.well-known/apple-app-site-association', (req, res) => {
     });
 });
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 if (require.main === module) {
     app.listen(PORT, () => console.log(`Running on port ${PORT}`));

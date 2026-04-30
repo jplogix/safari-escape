@@ -11,7 +11,7 @@ This causes several major issues for developers:
 - Restricted native APIs (camera, geolocation, etc.).
 - Overall degraded user experience.
 
-The goal of this project (`safari-escape`) is to forcibly "break out" of the Instagram/Facebook iOS in-app browser and seamlessly load the destination URL in a native browser (Safari or Chrome).
+The goal of this project (`browser-escape`) is to forcibly "break out" of the Instagram/Facebook iOS in-app browser and seamlessly load the destination URL in a native browser (Safari or Chrome).
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "name": "safari-escape-wine",
+  "name": "browser-escape-wine",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
